@@ -9,11 +9,11 @@ export function Footer() {
                     <span className="text-sm font-medium">100% Private & Secure</span>
                 </div>
                 <p className="text-sm text-slate-400 max-w-xl">
-                    Disclaimer: This is a <strong>purely for fun</strong> project for our college group! Please do not enter real sensitive data.
+                    Disclaimer: This is a <strong>purely for fun</strong> project! Please do not enter real sensitive data.
                     Keep it light, keep it fun!
                 </p>
                 <p className="text-xs text-slate-500 mt-4">
-                    © {new Date().getFullYear()} Cheater Detector. Built for fun.
+                    © {new Date().getFullYear()} Cheater Detector. Built for fun by Tahmied.
                 </p>
             </div>
         </footer>
