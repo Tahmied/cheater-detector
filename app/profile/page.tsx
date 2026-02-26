@@ -188,16 +188,16 @@ export default function Profile() {
                         <form onSubmit={handleSavePartner} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300">Target's Name</label>
+                                    <label className="text-sm font-medium text-slate-300">Partner's Name</label>
                                     <Input placeholder="John Doe" value={partnerName} onChange={(e) => setPartnerName(e.target.value)} required />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300">Target's Phone</label>
+                                    <label className="text-sm font-medium text-slate-300">Partner's Phone</label>
                                     <Input type="tel" placeholder="+1234567890" value={partnerPhone} onChange={(e) => setPartnerPhone(e.target.value)} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Target's Email</label>
+                                <label className="text-sm font-medium text-slate-300">Partner's Email</label>
                                 <Input type="email" placeholder="john@example.com" value={partnerEmail} onChange={(e) => setPartnerEmail(e.target.value)} required />
                             </div>
 
