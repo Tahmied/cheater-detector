@@ -9,7 +9,7 @@ export async function POST(req: Request) {
         const { action, phone, password, name, email } = body;
 
         if (action === "login") {
-            const user = await User.findOne({ phone, password });
+            const user = await User.findOne({ phone, password }).select("-password");
             if (!user) {
                 return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
             }
@@ -22,7 +22,12 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: "User with this phone already exists" }, { status: 400 });
             }
             const newUser = await User.create({ name, phone, email, password });
-            return NextResponse.json({ success: true, user: newUser });
+
+            // Convert to object and remove password for safe client delivery
+            const safeUser = newUser.toObject();
+            delete safeUser.password;
+
+            return NextResponse.json({ success: true, user: safeUser });
         }
 
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

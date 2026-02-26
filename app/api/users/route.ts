@@ -22,7 +22,7 @@ export async function PUT(req: Request) {
                 },
             },
             { new: true }
-        );
+        ).select("-password -__v");
 
         if (!updatedUser) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });

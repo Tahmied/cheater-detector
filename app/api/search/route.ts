@@ -22,13 +22,13 @@ export async function GET(req: Request) {
                 { "partner.phone": searchRegex },
                 { "partner.email": searchRegex },
             ],
-        }).select("partner createdAt name -_id"); // We return the submitter's name as requested.
+        }).select("createdAt name -_id"); // We ONLY return the submitter's name and createdAt. We STRICTLY exclude the partner data!
 
-        // If matches are found, we return the disguised count and the partner objects + submitter name.
+        // If matches are found, we return the disguised count and the safe submitter names.
         return NextResponse.json({
             success: true,
             count: matches.length,
-            matches: matches, // These only contain the partner subdocument
+            matches: matches, // These now ONLY contain the submitter name and createdAt, no partner details!
         });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || "Something went wrong" }, { status: 500 });
