@@ -127,7 +127,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)] w-full px-4 text-center mt-10">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)] w-full px-4 text-center mt-10 mb-16">
 
       {/* Hero Section */}
       <motion.div
