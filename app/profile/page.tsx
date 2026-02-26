@@ -166,7 +166,7 @@ export default function Profile() {
                                         <Input type="email" placeholder="Your Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                                     </>
                                 )}
-                                <Input type="tel" placeholder="Your Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                                <Input type="text" placeholder="Phone number or email" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                                 <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
                                 {error && <p className="text-sm text-destructive">{error}</p>}

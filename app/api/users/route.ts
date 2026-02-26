@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 export async function PUT(req: Request) {
@@ -10,6 +11,12 @@ export async function PUT(req: Request) {
 
         // Bug fix #2: require both userId AND sessionToken
         if (!userId || !sessionToken) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Bug fix #3: validate ObjectId format before hitting the DB
+        // (invalid format causes a Mongoose CastError → 500 without this check)
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
