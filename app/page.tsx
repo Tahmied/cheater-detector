@@ -4,8 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, Lock, Search, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Heart, Lock, Search, ShieldAlert } from "lucide-react";
 import { useState } from "react";
+
+// Returns true if query looks like a plain name (not an email or phone number)
+function looksLikeName(q: string): boolean {
+  if (!q || q.trim().length === 0) return false;
+  const isEmail = q.includes("@");
+  const isPhone = /^[\d\s()\-+]{6,}$/.test(q.trim());
+  return !isEmail && !isPhone;
+}
 
 // Animated spinner component
 function Spinner() {
@@ -93,6 +101,8 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
+
+  const isNameSearch = looksLikeName(query);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,6 +221,29 @@ export default function Home() {
               </Button>
             </div>
           </form>
+
+          {/* Name-only search warning */}
+          <AnimatePresence>
+            {isNameSearch && !isSearching && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 mx-1 rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 flex items-start gap-3 text-left">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                  <p className="text-amber-300 text-xs leading-relaxed">
+                    <span className="font-semibold">Name-only searches may not be accurate</span> — multiple people can share the same name. For{" "}
+                    <span className="font-semibold text-amber-200">100% accurate results</span>, try searching by{" "}
+                    <span className="font-semibold text-amber-200">phone number</span> or{" "}
+                    <span className="font-semibold text-amber-200">email</span> instead.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Searching status bar */}
           <AnimatePresence>
