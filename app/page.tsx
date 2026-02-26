@@ -138,7 +138,7 @@ export default function Home() {
       >
         <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-full inline-flex items-center gap-2 mb-4">
           <Heart className="w-4 h-4" />
-          <span className="text-sm font-semibold tracking-wide">The Ultimate Relationship Fun Test</span>
+          <span className="text-sm font-semibold tracking-wide">Check if your partner is really yours</span>
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
@@ -150,7 +150,7 @@ export default function Home() {
 
         <p className="text-lg md:text-xl text-slate-300 max-w-2xl mt-4">
           A purely fun, entertaining way to see if there are overlapping claims on your boyfriend or girlfriend.
-          Enter a phone number, email, or name below.
+          Enter a phone number, email or name below.
         </p>
 
         {/* Search Form */}
@@ -235,7 +235,7 @@ export default function Home() {
                 <div className="mt-3 mx-1 rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 flex items-start gap-3 text-left">
                   <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                   <p className="text-amber-300 text-xs leading-relaxed">
-                    <span className="font-semibold">Name-only searches may not be accurate</span> — multiple people can share the same name. For{" "}
+                    <span className="font-semibold">Name only searches may not be accurate</span> multiple people can share the same name. For{" "}
                     <span className="font-semibold text-amber-200">100% accurate results</span>, try searching by{" "}
                     <span className="font-semibold text-amber-200">phone number</span> or{" "}
                     <span className="font-semibold text-amber-200">email</span> instead.
@@ -310,6 +310,14 @@ export default function Home() {
                         ))}
                       </ul>
                     </div>
+                    {isNameSearch && (
+                      <div className="w-full flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3 text-left">
+                        <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                        <p className="text-amber-300 text-xs leading-relaxed">
+                          <span className="font-semibold">Names alone don't provide accurate results</span>. these could be different people sharing the same name. Please search by <span className="font-semibold text-amber-200">mobile number</span> or <span className="font-semibold text-amber-200">email</span> for 100% accurate data.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center py-6">
