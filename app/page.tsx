@@ -7,6 +7,88 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Heart, Lock, Search, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 
+// Animated spinner component
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin w-4 h-4"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
+    </svg>
+  );
+}
+
+// Skeleton pulse for loading state
+function SearchingSkeleton({ query }: { query: string }) {
+  return (
+    <motion.div
+      key="skeleton"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="mt-16 w-full max-w-xl"
+    >
+      <Card className="glass-card border-t border-t-white/20">
+        <CardContent className="pt-6 pb-8">
+          <div className="flex flex-col items-center gap-5 text-center">
+            {/* Pulsing icon placeholder */}
+            <div className="relative flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-primary/20 animate-pulse" />
+              <div className="absolute w-8 h-8 rounded-full bg-primary/40 animate-ping" />
+            </div>
+
+            {/* Scanning label */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-white font-semibold text-lg tracking-wide">
+                Scanning the database
+                <span className="inline-flex gap-0.5 ml-1">
+                  {[0, 0.2, 0.4].map((delay, i) => (
+                    <motion.span
+                      key={i}
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.2, delay }}
+                      className="text-primary"
+                    >
+                      .
+                    </motion.span>
+                  ))}
+                </span>
+              </p>
+              <p className="text-slate-400 text-sm">Looking for overlapping claims on <span className="text-primary font-medium">&quot;{query}&quot;</span></p>
+            </div>
+
+            {/* Skeleton lines */}
+            <div className="w-full space-y-3 mt-2">
+              {[1, 0.7, 0.5].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-3 rounded-full bg-white/10 animate-pulse"
+                  style={{ width: `${w * 100}%`, margin: "0 auto" }}
+                />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -17,6 +99,7 @@ export default function Home() {
     if (!query) return;
 
     setIsSearching(true);
+    setResults(null); // Clear previous results while searching
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
@@ -63,23 +146,98 @@ export default function Home() {
         {/* Search Form */}
         <div className="w-full max-w-xl mt-8 relative">
           <form onSubmit={handleSearch} className="relative flex items-center w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+            {/* Search icon — becomes a spinner when searching */}
+            <AnimatePresence mode="wait">
+              {isSearching ? (
+                <motion.span
+                  key="spinner"
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-primary pointer-events-none"
+                >
+                  <Spinner />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="icon"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                >
+                  <Search className="w-5 h-5" />
+                </motion.span>
+              )}
+            </AnimatePresence>
+
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by phone number, email..."
-              className="pl-12 pr-32 h-14 text-lg rounded-2xl bg-white/5 border-white/20 hover:border-white/40 focus:border-primary focus:bg-white/10"
+              disabled={isSearching}
+              className={`pl-12 pr-32 h-14 text-lg rounded-2xl bg-white/5 border-white/20 hover:border-white/40 focus:border-primary focus:bg-white/10 transition-all duration-300 ${isSearching ? "opacity-70 border-primary/50 bg-primary/5" : ""
+                }`}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
               <Button
                 type="submit"
                 disabled={isSearching || !query}
-                className="rounded-xl px-6 h-10 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-accent border-0"
+                className="rounded-xl px-6 h-10 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-accent border-0 min-w-[100px] transition-all duration-200"
               >
-                {isSearching ? "..." : "Search"}
+                <AnimatePresence mode="wait">
+                  {isSearching ? (
+                    <motion.span
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Spinner />
+                      Searching
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="idle"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      Search
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Button>
             </div>
           </form>
+
+          {/* Searching status bar */}
+          <AnimatePresence>
+            {isSearching && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 mx-1 rounded-xl bg-primary/10 border border-primary/25 px-4 py-2.5 flex items-center gap-3">
+                  {/* Animated scan bar */}
+                  <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-accent rounded-full"
+                      animate={{ x: ["-100%", "200%"] }}
+                      transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+                      style={{ width: "50%" }}
+                    />
+                  </div>
+                  <span className="text-primary text-xs font-semibold whitespace-nowrap tracking-wide">
+                    Scanning database…
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="text-xs text-slate-400 flex items-center justify-center gap-1.5 mt-4">
             <Lock className="w-3.5 h-3.5" />
@@ -88,10 +246,13 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* Results Section */}
-      <AnimatePresence>
-        {results !== null && (
+      {/* Results / Skeleton Section */}
+      <AnimatePresence mode="wait">
+        {isSearching ? (
+          <SearchingSkeleton key="skeleton" query={query} />
+        ) : results !== null ? (
           <motion.div
+            key="results"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -131,7 +292,7 @@ export default function Home() {
               </CardContent>
             </Card>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
     </div>
