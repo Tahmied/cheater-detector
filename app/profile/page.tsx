@@ -39,13 +39,13 @@ export default function Profile() {
     const [successMsg, setSuccessMsg] = useState("");
 
     useEffect(() => {
-        // Bug fix #3: restore user + sessionToken from localStorage separately
         const storedUser = localStorage.getItem("cheater_detector_user");
         const storedToken = localStorage.getItem("cheater_detector_token");
-        if (storedUser && storedToken) {
+        if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
-            setSessionToken(storedToken);
+            // Restore token if available (may be missing for sessions before the security update)
+            if (storedToken) setSessionToken(storedToken);
             if (parsedUser.partner) {
                 setPartnerName(parsedUser.partner.name || "");
                 setPartnerPhone(parsedUser.partner.phone || "");
@@ -96,10 +96,16 @@ export default function Profile() {
 
     const handleSavePartner = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSavingPartner(true);
-        // Bug fix #9: clear BOTH messages at the start of each save attempt
         setSuccessMsg("");
         setError("");
+
+        // If this session pre-dates the token system, ask user to re-login
+        if (!sessionToken) {
+            setError("Session expired — please log out and log back in to save changes.");
+            return;
+        }
+
+        setSavingPartner(true);
 
         try {
             const res = await fetch("/api/users", {

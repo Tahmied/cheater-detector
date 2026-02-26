@@ -32,7 +32,10 @@ export async function PUT(req: Request) {
         // Bug fix #2: verify sessionToken matches what we have in DB
         const user = await User.findById(userId).select("sessionToken");
         if (!user || user.sessionToken !== sessionToken) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json(
+                { error: "Session expired — please log out and log back in to save your partner details." },
+                { status: 401 }
+            );
         }
 
         const updatedUser = await User.findByIdAndUpdate(
