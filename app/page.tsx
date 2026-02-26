@@ -11,7 +11,8 @@ import { useState } from "react";
 function looksLikeName(q: string): boolean {
   if (!q || q.trim().length === 0) return false;
   const isEmail = q.includes("@");
-  const isPhone = /^[\d\s()\-+]{6,}$/.test(q.trim());
+  // Bug fix #6: accept phone numbers as short as 4 digits
+  const isPhone = /^[\d\s()\-+]{4,}$/.test(q.trim());
   return !isEmail && !isPhone;
 }
 

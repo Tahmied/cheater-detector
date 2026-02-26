@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cheater Detector - Fun College Edition",
-  description: "A fun project to see if anyone else is claiming your partner! Completely private and secure.",
+  title: "Cheater Detector",
+  description: "Check if your partner is cheating with you",
 };
 
 export default function RootLayout({

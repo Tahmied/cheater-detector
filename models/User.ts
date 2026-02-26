@@ -10,7 +10,8 @@ const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Simple mock auth password
+    password: { type: String, required: true }, // Stored as bcrypt hash
+    sessionToken: { type: String, default: null }, // Used for lightweight server-side auth
     partner: { type: PartnerSchema, required: false }, // Optional partner details
 }, { timestamps: true });
 

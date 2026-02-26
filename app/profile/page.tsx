@@ -7,8 +7,20 @@ import { motion } from "framer-motion";
 import { Heart, Lock, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
+// Spinner component (matching home page)
+function Spinner() {
+    return (
+        <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    );
+}
+
 export default function Profile() {
     const [user, setUser] = useState<any>(null);
+    // Bug fix #3: store sessionToken separately from user object
+    const [sessionToken, setSessionToken] = useState<string | null>(null);
     const [isLogin, setIsLogin] = useState(true);
 
     // Auth Form State
@@ -27,11 +39,13 @@ export default function Profile() {
     const [successMsg, setSuccessMsg] = useState("");
 
     useEffect(() => {
-        // Check if user is logged in
+        // Bug fix #3: restore user + sessionToken from localStorage separately
         const storedUser = localStorage.getItem("cheater_detector_user");
-        if (storedUser) {
+        const storedToken = localStorage.getItem("cheater_detector_token");
+        if (storedUser && storedToken) {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
+            setSessionToken(storedToken);
             if (parsedUser.partner) {
                 setPartnerName(parsedUser.partner.name || "");
                 setPartnerPhone(parsedUser.partner.phone || "");
@@ -51,16 +65,20 @@ export default function Profile() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: isLogin ? "login" : "register",
-                    phone,
-                    password,
-                    name,
-                    email,
+                    // Bug fix #10: trim inputs on the client side too
+                    phone: phone.trim(),
+                    password: password.trim(),
+                    name: name.trim(),
+                    email: email.trim(),
                 }),
             });
             const data = await res.json();
             if (data.success) {
                 setUser(data.user);
+                setSessionToken(data.sessionToken);
+                // Bug fix #3: store user and token separately; don't store raw _id object as "auth"
                 localStorage.setItem("cheater_detector_user", JSON.stringify(data.user));
+                localStorage.setItem("cheater_detector_token", data.sessionToken);
                 if (data.user.partner) {
                     setPartnerName(data.user.partner.name || "");
                     setPartnerPhone(data.user.partner.phone || "");
@@ -79,6 +97,7 @@ export default function Profile() {
     const handleSavePartner = async (e: React.FormEvent) => {
         e.preventDefault();
         setSavingPartner(true);
+        // Bug fix #9: clear BOTH messages at the start of each save attempt
         setSuccessMsg("");
         setError("");
 
@@ -88,6 +107,8 @@ export default function Profile() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     userId: user._id,
+                    // Bug fix #2/#3: send the sessionToken so the server can verify the request
+                    sessionToken,
                     partnerName,
                     partnerPhone,
                     partnerEmail,
@@ -110,11 +131,17 @@ export default function Profile() {
 
     const logout = () => {
         setUser(null);
+        setSessionToken(null);
+        // Bug fix #3: clear both storage keys on logout
         localStorage.removeItem("cheater_detector_user");
+        localStorage.removeItem("cheater_detector_token");
         setPhone("");
         setPassword("");
         setName("");
         setEmail("");
+        // Bug fix #9: also clear stale messages on logout
+        setError("");
+        setSuccessMsg("");
     };
 
     if (!user) {
@@ -144,12 +171,27 @@ export default function Profile() {
 
                                 {error && <p className="text-sm text-destructive">{error}</p>}
 
+                                {/* Bug fix #8: spinner instead of "..." */}
                                 <Button type="submit" className="w-full mt-2" disabled={loading}>
-                                    {loading ? "..." : isLogin ? "Login" : "Sign Up"}
+                                    {loading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <Spinner />
+                                            {isLogin ? "Logging in…" : "Creating account…"}
+                                        </span>
+                                    ) : (
+                                        isLogin ? "Login" : "Sign Up"
+                                    )}
                                 </Button>
                             </form>
                             <div className="mt-6 text-center text-sm">
-                                <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
+                                <button
+                                    onClick={() => {
+                                        setIsLogin(!isLogin);
+                                        // Bug fix #9: clear errors when switching auth mode
+                                        setError("");
+                                    }}
+                                    className="text-primary hover:underline"
+                                >
                                     {isLogin ? "Need an account? Sign up" : "Already have an account? Login"}
                                 </button>
                             </div>
@@ -205,8 +247,16 @@ export default function Profile() {
                             {successMsg && <p className="text-sm text-green-400 mt-2">{successMsg}</p>}
 
                             <div className="flex justify-end pt-4">
+                                {/* Bug fix #8: spinner on save button too */}
                                 <Button type="submit" disabled={savingPartner} className="shadow-lg shadow-accent/20 bg-accent hover:bg-accent/90">
-                                    {savingPartner ? "Saving..." : "Lock in Partner"}
+                                    {savingPartner ? (
+                                        <span className="flex items-center gap-2">
+                                            <Spinner />
+                                            Saving…
+                                        </span>
+                                    ) : (
+                                        "Lock in Partner"
+                                    )}
                                 </Button>
                             </div>
                         </form>

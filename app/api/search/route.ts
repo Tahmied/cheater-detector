@@ -2,6 +2,11 @@ import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import { NextResponse } from "next/server";
 
+// Bug fix #4: escape special regex characters so user input can't break the regex or leak all records
+function escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function GET(req: Request) {
     try {
         await dbConnect();
@@ -12,23 +17,23 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Missing search query" }, { status: 400 });
         }
 
-        const searchRegex = new RegExp(query.trim(), "i");
+        // Bug fix #4: use the escaped version
+        const searchRegex = new RegExp(escapeRegex(query.trim()), "i");
 
-        // We are looking for Users whose *partner* matches the search query.
-        // The query could be matching partner's phone, email, or name.
+        // Bug fix #5: only search users who actually have partner data set
         const matches = await User.find({
+            "partner": { $exists: true, $ne: null },
             $or: [
                 { "partner.name": searchRegex },
                 { "partner.phone": searchRegex },
                 { "partner.email": searchRegex },
             ],
-        }).select("createdAt name -_id"); // We ONLY return the submitter's name and createdAt. We STRICTLY exclude the partner data!
+        }).select("createdAt name -_id"); // ONLY return submitter name + date. Partner data is strictly excluded.
 
-        // If matches are found, we return the disguised count and the safe submitter names.
         return NextResponse.json({
             success: true,
             count: matches.length,
-            matches: matches, // These now ONLY contain the submitter name and createdAt, no partner details!
+            matches: matches,
         });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || "Something went wrong" }, { status: 500 });
